@@ -14,22 +14,29 @@ dataset_path = Path(r"iris.csv")
 import pandas as pd
 import numpy as np
 
-#sklearn lib
+# sklearn lib
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
 
 
 dataset = pd.read_csv(dataset_path, sep=',')
 
-#Vedere se ci sono colonne con valori nulli
+# Vedere se ci sono colonne con valori nulli
 print(f"valori nulli:\n{dataset.isnull().any()}")
 
-#Vedere il numero di esempi per classi
+# Vedere il numero di esempi per classi
 conteggio_per_classe = dataset['y'].value_counts().sort_index()
 print(conteggio_per_classe)
 
-y = dataset.y.values
-X = dataset.drop(columns='y')
+# Rimuovo la prima riga con il nome delle colonne
+dataset = dataset.iloc[1:]  
 
+y = dataset.y.values
+X = dataset.drop(columns=5)
+
+# Trasforno in np.array
+y = np.asarray([np.asarray(x, dtype=str) for x in y])
+X = np.asarray([np.asarray(x, dtype=np.float64) for x in X])
 
 '''
 FONTE: scikit-learn.org
@@ -52,7 +59,22 @@ Validator
 '''
 ############################# Cross validation - Ottimizzazione iperparametri  #########################
 
-...
+skf = StratifiedKFold(n_splits=15)
+
+for index, (train_index, test_index) in enumerate(skf.split(X_train, y_train)):
+    print(f"Fold {index}:")
+    print(f"  Train: index={train_index}")
+    print(f"  Test:  index={test_index}")
+
+    X_train_fold    = X_train[train_index]
+    X_validate_fold = X_train[test_index]
+
+    y_train_fold    = y_train[train_index]
+    y_validate_fold = y_train[test_index]
+
+    print(y_train_fold)
+
+
 
 ############################# Considerazioni - Model selection  #########################
 

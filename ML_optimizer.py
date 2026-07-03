@@ -2,7 +2,7 @@ from sklearn.svm import SVR
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.model_selection import KFold, cross_val_score, StratifiedKFold
 from sklearn.pipeline import Pipeline
 import optuna
 
@@ -98,6 +98,13 @@ def optimize_svr_rbf(X, y, trials=100, timeout=600):
 
         # TRAINING & TESTING con cross validation
         # METRICHE: https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-string-names
+
+        skf = StratifiedKFold(n_splits=2)
+
+        for index, (train_index, test_index) in enumerate(skf.split(X, y)):
+            print(f"Fold {index}:")
+            print(f"  Train: index={train_index}")
+            print(f"  Test:  index={test_index}")
 
         #SCALER - MODELLO Questo scaler vale solo all'interno dello studio
         pipeline = Pipeline([
