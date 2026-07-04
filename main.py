@@ -75,9 +75,9 @@ def _test_classi(array: np.array):
             classi[ele]+=1
     return classi
 
-print(f"distribbuzione delle classi in y_train:\n{_test_classi(y_train)}")
+print(f"distribuzione delle classi in y_train:\n{_test_classi(y_train)}")
 print('-'*20)   # separatore
-print(f"distribbuzione delle classi in y_test:\n{_test_classi(y_test)}")
+print(f"distribuzione delle classi in y_test:\n{_test_classi(y_test)}")
 
 
 '''
@@ -89,10 +89,20 @@ Prima del Cross validation deve essere definito un modello con i suoi iperparame
 Prima si sceglie il metodo di ottimizzazione degli iperparametri e poi si usa "_valutatore_kfold"  per
 testarne le metriche e scegliere il migliore.
 
+Diverse funzioni native di sklearn racchiudono tutti i passaggi di cross validation: ottimizzazione parametri, k-fold e scalamento interno
+ad ogni fold.
+Un implementazione potrebbe essere l'uso di GridSearchCV() passando come estimator una Pipeline.
+
+In sklearn una Pipeline è uno strumento che concatena più trasformatori, questo ci permette, all'interno di
+GridSearchCV, di scalare in ogni fold i dati (sia training che validator) basandoci sono sui dati di
+training di quel fold specifico. 
+
+
 '''
 
 
 ############################# Cross validation - Ottimizzazione iperparametri  #########################
+
 modello = KNeighborsClassifier(n_neighbors= 1)
 
 def _valutatore_kfold(modello: object, X: np.ndarray, y: np.ndarray, verbose: bool = False, splits: int = 7, scalamento: bool = False):
