@@ -6,10 +6,7 @@ utilizzare principalmente metodi non lineari
 
 '''
 from pathlib import Path
-
 dataset_path = Path(r"iris.csv")
-
-############################# EDA  #########################
 
 import pandas as pd
 import numpy as np
@@ -17,26 +14,41 @@ import numpy as np
 # sklearn lib
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
 
+
+# sklearn lib - models
+from sklearn.neighbors import KNeighborsClassifier
+
+# sklearn lib - metriche classificazione
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+
+
+
+
+
+############################# EDA  #########################
 
 dataset = pd.read_csv(dataset_path, sep=',')
 
 # Vedere se ci sono colonne con valori nulli
+print("Controllo valori nulli:")
 print(f"valori nulli:\n{dataset.isnull().any()}")
+
+print('-'*20)   # separatore
 
 # Vedere il numero di esempi per classi
 conteggio_per_classe = dataset['y'].value_counts().sort_index()
+print("Controllo conteggio classi:")
 print(conteggio_per_classe)
 
-# Rimuovo la prima riga con il nome delle colonne
-dataset = dataset.iloc[1:]  
+print('-'*20)   # separatore
 
-y = dataset.y.values
-X = dataset.drop(columns=5)
+# Trasformo in np.array
+y = dataset.y.to_numpy()
+X = dataset.drop(columns='y').to_numpy()
 
-# Trasforno in np.array
-y = np.asarray([np.asarray(x, dtype=str) for x in y])
-X = np.asarray([np.asarray(x, dtype=np.float64) for x in X])
 
 '''
 FONTE: scikit-learn.org
@@ -48,31 +60,105 @@ stratify=y in modo che i due sottoinsiemi siano omogenei rispetto ad y
 X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.1, random_state=7, stratify=y)
 
 #testiamo che la funzione abbia effettivamente diviso i sample in modo omogeneo:
-conteggio_per_classe = y_test.value_counts().sort_index()
-print(f"y_test:\n{conteggio_per_classe}")
-conteggio_per_classe = y_train.value_counts().sort_index()
-print(f"y_train:\n{conteggio_per_classe}")
+
+def _test_classi(array: np.array):
+    '''
+    Accetta un np.array e conta quanti elementi ci sono
+    '''
+    classi = {}
+    for ele in array:
+        if ele not in classi:
+            classi[ele] = 1
+        else:
+            classi[ele]+=1
+    return classi
+
+print(f"distribbuzione delle classi in y_train:\n{_test_classi(y_train)}")
+print('-'*20)   # separatore
+print(f"distribbuzione delle classi in y_test:\n{_test_classi(y_test)}")
+
 
 '''
 Lo scalamento deve essere fatto interno al k-fold altrimenti non è attendibile valutare ogni ottimizzazione con il 
 Validator
+StratifiedKFold si preoccupa di generare per ogni fold un Validator diverso e omogeneo
 '''
 ############################# Cross validation - Ottimizzazione iperparametri  #########################
+model = KNeighborsClassifier(n_neighbors= 5)
 
-skf = StratifiedKFold(n_splits=15)
+def _valutatore_kfold(modello: object, X: np.array, y: np.array, verbose: bool = False, splits: int = 15, scalamento: bool = False):
+    '''
+    Questa funzione accetta un modello (sklearn) con i suoi iperparametri e un training set.
+    Sfrutta la funzione StratifiedKFold per valutare le sue prestazioni su k fold omogeneamente suddivisi.
+    I risultati finali sono calcolati come media dei risultati parziali di ogni fold.
 
-for index, (train_index, test_index) in enumerate(skf.split(X_train, y_train)):
-    print(f"Fold {index}:")
-    print(f"  Train: index={train_index}")
-    print(f"  Test:  index={test_index}")
+    Args
+    -----
+    modello : object
+        modello sklearn da testare gia inizializzato con gli iperparametri
+        es:
+            modello = KNeighborsClassifier(n_neighbors= 5, ...)
 
-    X_train_fold    = X_train[train_index]
-    X_validate_fold = X_train[test_index]
+    X : np.array
+        features del dataset di training da suddividere
 
-    y_train_fold    = y_train[train_index]
-    y_validate_fold = y_train[test_index]
+    y : np.array
+        lable del dataset di training da suddividere    
+    
+    verbose : bool
+        abilita print di debug
 
-    print(y_train_fold)
+    splits : int
+        in quanti fold si desidera suddividere il training set
+
+    scalamento : bool
+        abilita lo scalamento di ogni validator usando i dati di training in ogni fold
+        disabilitato di default
+
+    returns
+    -----
+    d : dict 
+        dizionario contenente le valutazioni finali del modello
+
+    note
+    -----
+    Questa funzione sarebbe la mia implementazione personale di cross_val_score di sklearn.
+    Ho deciso di implementarla in modo che ogni passaggio fosse ben visibile
+
+    '''
+    # random_state=7 per rendere il risultato riproducibile
+    skf = StratifiedKFold(n_splits=splits, random_state=7)
+
+    for index, (train_index, test_index) in enumerate(skf.split(X, y)):
+        if verbose:
+            print(f"Fold {index}:")
+            print(f"  Train: index={train_index}")
+            print(f"  Test:  index={test_index}")
+
+        # Dati per ogni fold:
+        X_train = X[train_index]
+        X_validate = X[test_index]
+
+        y_train = y[train_index]
+        y_validate = y[test_index]
+
+        if scalamento:
+            # scalamento dei dati basato sui soli dati di training
+            scaler = StandardScaler()
+            scaler.fit(X_train)
+            X_train = scaler.transform(X_train)
+            X_validate = scaler.transform(X_validate)
+
+        modello.fit(X_train, y_train)
+        y_pred = modello.predict(X_validate)
+
+
+        # alleno il modello
+        modello.fit(...)
+
+
+
+
 
 
 
