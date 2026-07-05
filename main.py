@@ -18,10 +18,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
 #from sklearn.base import clone
 
 # sklearn lib - models
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 # sklearn lib - metriche classificazione
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -60,7 +62,7 @@ test_size=0.1 perchè essendo il dataset molto piccolo vogliamo allenare i nostr
 random_size=int in modo che ad ogni iterazione la funzione produca sempre lo stesso split
 stratify=y in modo che i due sottoinsiemi siano omogenei rispetto ad y
 '''
-X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.1, random_state=7, stratify=y)
+X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.30, random_state=7, stratify=y)
 
 #testiamo che la funzione abbia effettivamente diviso i sample in modo omogeneo:
 
@@ -101,40 +103,103 @@ training di quel fold specifico.
 
 '''
 
-print('-'*20)   # separatore
+
+string = '''
+#############################
+INIZIO CROSS VALIDATION
+#############################
+'''
+print(string)
 
 ############################# Cross validation - Ottimizzazione iperparametri  #########################
 
     # Nearest neighbors - multiclass
 
 iperparametri = {
-    'n_neighbors': list(range(1, 10, 2))
+    'modello__n_neighbors': [1,2,3,4,5,6,7,8,9,10]
     }
+''' NB
+Dal momento che viene usata una Pipeline gli iperparametri devono essere riferiti ad un preciso step
+di essa, per questo devo mettere modello__ prima di n_neighbors per indiare a pipeline che l'iperparametro
+è riferito al modello e nonn allo scaler
+'''
+
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('modello',  KNeighborsClassifier())
+])
 
 gs = GridSearchCV(
-    estimator=KNeighborsClassifier(),
+    estimator=pipeline,
     param_grid=iperparametri,
-    scoring='accuracy',
-    cv=5)
+    scoring='f1_macro',
+    cv=5,
+    verbose=True)
 
 gs.fit(X_train, y_train)
 print('K-Nearest Neighbor ..................')
 print('iperparametri migliori: ', gs.best_params_)
 print('accuratezza del modello:', gs.best_score_)
-print('-'*20)   # separatore
+print('-'*20 + '\n')   # separatore
+
+
+
+
+    # Decision tree - multiclass
+
+iperparametri = {
+    'criterion' : ['entropy','gini'],
+    }
+
+
+gs = GridSearchCV(
+    estimator=DecisionTreeClassifier(random_state=7),
+    param_grid=iperparametri,
+    scoring='f1_macro',
+    cv=5,
+    verbose=True)
+
+gs.fit(X_train, y_train)
+print('Decision Tree ..................')
+print('iperparametri migliori: ', gs.best_params_)
+print('accuratezza del modello:', gs.best_score_)
+print('-'*20 + '\n')   # separatore
+
+
+
+
+
 
 
 ############################# Considerazioni - Model selection  #########################
 
-...
-
 '''
 conclusioni...
 '''
-best_model=...
+
+parametri = {
+    'n_neighbors' : 5,
+    #'criterion': 'entropy'
+}
+
+best_model=KNeighborsClassifier(n_neighbors=5)
+best_model=DecisionTreeClassifier(criterion='entropy')
+
+def test(best_model):
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+    X_train_scal = scaler.transform(X_train)
+    X_test_scal = scaler.transform(X_test)
+
+    best_model.fit(X_train_scal, y_train)
+    y_pred = best_model.predict(X_test_scal)
 
 ############################# Testing  #########################
 
-...
+    accuracy_score, precision_score, recall_score, f1_score
+    accuratezza = accuracy_score(y_test, y_pred)
+    print(f"l'accurazetta del modello {best_model} è di: {accuratezza}")
 
+test(best_model)
 
