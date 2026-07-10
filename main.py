@@ -2,7 +2,10 @@
 Introduzione:
 
 Dai dati presenti nella zip del dataset ho scoperto che solo una delle 3 classi è linearmente divisibile, devo 
-utilizzare principalmente metodi non lineari
+utilizzare principalmente metodi non lineari.
+Inizialmente testerò il decision tree e il nearest neighbors come unici classificatori delle tre classi.
+In seguito proverei altri modelli singoli per ogni classe (classificazione binaria) e li interpreterei
+con un modello 1-vs-all
 
 '''
 LABLES = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
@@ -15,7 +18,7 @@ import numpy as np
 
 # sklearn lib
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedKFold
+#from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
@@ -24,13 +27,15 @@ from sklearn.pipeline import Pipeline
 # sklearn lib - models
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 
 # sklearn lib - metriche classificazione
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 
-
-
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 ############################# EDA  #########################
@@ -53,6 +58,20 @@ print('-'*20)   # separatore
 # Trasformo in np.array
 y = dataset.y.to_numpy()
 X = dataset.drop(columns='y').to_numpy()
+
+# Etichette per i classificatori lineari
+y_bin = {}
+for lable in LABLES:
+    y_bin[lable] = [0] * len(y)
+    for i, ele in enumerate(y):
+        if ele==lable:
+            y_bin[lable][i] = 1
+        else:
+            y_bin[lable][i] = 0
+
+y_setosa = y_bin['Iris-setosa']
+y_versicolor = y_bin['Iris-versicolor']
+Y_virginia = y_bin['Iris-virginica']
 
 
 '''
@@ -138,7 +157,8 @@ gs = GridSearchCV(
     verbose=True)
 
 gs.fit(X_train, y_train)
-print('K-Nearest Neighbor ..................')
+nome = 'K-Nearest Neighbor'
+print(nome + '-'*(40-len(nome)))
 print('iperparametri migliori: ', gs.best_params_)
 print('accuratezza del modello:', gs.best_score_)
 print('-'*20 + '\n')   # separatore
@@ -149,19 +169,59 @@ print('-'*20 + '\n')   # separatore
     # Decision tree - multiclass
 
 iperparametri = {
-    'criterion' : ['entropy','gini'],
+    
     }
 
 
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('modello',  KNeighborsClassifier())
+])
+
 gs = GridSearchCV(
-    estimator=DecisionTreeClassifier(random_state=7),
+    estimator=pipeline,
     param_grid=iperparametri,
     scoring='f1_macro',
     cv=5,
     verbose=True)
 
+
 gs.fit(X_train, y_train)
-print('Decision Tree ..................')
+nome = 'Decision Tree'
+print(nome + '-'*(40-len(nome)))
+print('iperparametri migliori: ', gs.best_params_)
+print('accuratezza del modello:', gs.best_score_)
+print('-'*20 + '\n')   # separatore
+
+
+    # LogisticRegression - classificatori binari
+
+iperparametri = {
+    'modello__C': [0.001, 0.01, 0.1, 1, 10, 100],          # Regolarizzazione
+    'modello__penalty': ['l2'],                            # Tipo di regolarizzazione
+    'modello__solver': ['liblinear', 'saga'],              # Algoritmo di ottimizzazione
+    'modello__max_iter': [1000, 2000],                     # Iterazioni massime
+    'modello__tol': [1e-4, 1e-3],                          # Tolleranza per la convergenza
+    'modello__class_weight': [None, 'balanced']            # Gestione classi sbilanciate
+}
+
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('modello',  LogisticRegression())
+])
+
+gs = GridSearchCV(
+    estimator=pipeline,
+    param_grid=iperparametri,
+    scoring='f1_macro',
+    cv=5,
+    verbose=True)
+
+
+gs.fit(X_train, y_train)
+nome = 'LogisticRegression'
+print(nome + '-'*(40-len(nome)))
 print('iperparametri migliori: ', gs.best_params_)
 print('accuratezza del modello:', gs.best_score_)
 print('-'*20 + '\n')   # separatore
@@ -169,8 +229,37 @@ print('-'*20 + '\n')   # separatore
 
 
 
+    # SVC - classificatori binari
+
+iperparametri = {
+    'modello__C': [0.1, 1, 10, 100],                    # Regolarizzazione
+    'modello__kernel': ['rbf', 'linear', 'poly'],       # Tipo di kernel
+    'modello__gamma': ['scale', 'auto', 0.01, 0.1, 1],  # Coefficiente per kernel rbf/poly
+    'modello__degree': [2, 3, 4],                       # Grado per kernel polinomiale
+    'modello__class_weight': [None, 'balanced'],        # Gestione classi sbilanciate
+    'modello__probability': [True],                     # Abilita predict_proba()
+    'modello__decision_function_shape': ['ovr']         # One-vs-Rest per multiclasse
+}
+
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('modello',  SVC())
+])
+
+gs = GridSearchCV(
+    estimator=pipeline,
+    param_grid=iperparametri,
+    scoring='f1_macro',
+    cv=5,
+    verbose=True)
 
 
+gs.fit(X_train, y_train)
+nome = 'SVC'
+print(nome + '-'*(40-len(nome)))
+print('iperparametri migliori: ', gs.best_params_)
+print('accuratezza del modello:', gs.best_score_)
+print('-'*20 + '\n')   # separatore
 
 ############################# Considerazioni - Model selection  #########################
 
