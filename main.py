@@ -147,153 +147,154 @@ INIZIO CROSS VALIDATION
 '''
 print(string)
 
+if False:
+        # Nearest neighbors - multiclass
 
-    # Nearest neighbors - multiclass
-
-iperparametri = {
-    'modello__n_neighbors': [1,2,3,4,5,6,7,8,9,10]
-    }
-''' NB
-Dal momento che viene usata una Pipeline gli iperparametri devono essere riferiti ad un preciso step
-di essa, per questo devo mettere modello__ prima di n_neighbors per indiare a pipeline che l'iperparametro
-è riferito al modello e nonn allo scaler
-'''
-
-
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('modello',  KNeighborsClassifier())
-])
-
-gs = GridSearchCV(
-    estimator=pipeline,
-    param_grid=iperparametri,
-    scoring='f1_macro',
-    cv=5,
-    verbose=True)
-
-gs.fit(X_train, y_train)
-nome = 'K-Nearest Neighbor'
-print(nome + '-'*max(0,(TRAT-len(nome))))
-print('iperparametri migliori: ', gs.best_params_)
-print('accuratezza del modello:', gs.best_score_)
-print('='*TRAT + '\n')   # separatore
+    iperparametri = {
+        'modello__n_neighbors': [1,2,3,4,5,6,7,8,9,10]
+        }
+    ''' NB
+    Dal momento che viene usata una Pipeline gli iperparametri devono essere riferiti ad un preciso step
+    di essa, per questo devo mettere modello__ prima di n_neighbors per indiare a pipeline che l'iperparametro
+    è riferito al modello e nonn allo scaler
+    '''
 
 
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('modello',  KNeighborsClassifier())
+    ])
 
+    gs = GridSearchCV(
+        estimator=pipeline,
+        param_grid=iperparametri,
+        scoring='f1_macro',
+        cv=5,
+        verbose=True)
 
-    # Decision tree - multiclass
-
-iperparametri = {
-    'modello__max_depth': [3, 5, 7, 10, None],
-    'modello__min_samples_split': [2, 5, 10, 20],
-    'modello__min_samples_leaf': [1, 2, 4, 8],
-    'modello__max_features': [None, 'sqrt', 'log2'],
-    'modello__criterion': ['gini', 'entropy'],
-    'modello__class_weight': [None, 'balanced']
-}
-
-
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('modello',  DecisionTreeClassifier())
-])
-
-gs = GridSearchCV(
-    estimator=pipeline,
-    param_grid=iperparametri,
-    scoring='f1_macro',
-    cv=5,
-    verbose=True)
-
-
-gs.fit(X_train, y_train)
-nome = 'Decision Tree'
-print(nome + '-'*max(0,(TRAT-len(nome))))
-print('iperparametri migliori: ', gs.best_params_)
-print('accuratezza del modello:', gs.best_score_)
-print('='*TRAT + '\n')   # separatore
-
-
-
-
-    # LogisticRegression - classificatori binari
-'''
-Alcune combinazioni di parametri della LogReg che la funzione "GridSearchCV" testa non sono
-valide per questo a run time alcuni fold non producono risultati validi !
-'''
-
-iperparametri = {
-    'modello__C': [0.001, 0.01, 0.1, 1, 10, 100],          # Regolarizzazione
-    'modello__penalty': ['l2'],                            # Tipo di regolarizzazione
-    'modello__solver': ['liblinear', 'saga'],              # Algoritmo di ottimizzazione
-    'modello__max_iter': [1000, 2000],                     # Iterazioni massime
-    'modello__tol': [1e-4, 1e-3],                          # Tolleranza per la convergenza
-    'modello__class_weight': [None, 'balanced']            # Gestione classi sbilanciate
-}
-
-
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('modello',  LogisticRegression())
-])
-
-gs = GridSearchCV(
-    estimator=pipeline,
-    param_grid=iperparametri,
-    scoring='f1_macro',
-    cv=5,
-    verbose=True)
-
-'''
-CLASSIFICATORI BINARI: LogReg e SVC devono essere ottimizzati per ognuna delle 3 classi; dopo la
-definizione di GridSearchCV() deve essere chiamata con ogni etichetta.
-Non posso usare la y_train che contiene più valori ma y_bin che contiene solo 1 o 0 a seconda 
-dell'appartenenza del sample alla classe positiva
-'''
-
-for etichetta in LABLES :
-
-    gs.fit(X_train, y_bin[etichetta])
-    nome = f'LogisticRegression({etichetta})'
-    print(nome + '-'*max(0,(TRAT-len(nome))))
-    print('iperparametri migliori: ', gs.best_params_)
-    print('accuratezza del modello:', gs.best_score_)
-    print('='*TRAT + '\n')   # separatore  
-
-
-
-
-    # SVC - classificatori binari
-
-iperparametri = {
-    'modello__C': [0.1, 1, 10, 100],                    # Regolarizzazione
-    'modello__kernel': ['rbf', 'linear'],               # Tipo di kernel
-    'modello__gamma': ['scale', 'auto', 0.01, 0.1, 1],  # Coefficiente per kernel rbf/poly
-}
-
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('modello',  SVC())
-])
-
-gs = GridSearchCV(
-    estimator=pipeline,
-    param_grid=iperparametri,
-    scoring='f1_macro',
-    cv=5,
-    verbose=True)
-
-
-for etichetta in LABLES :
-
-    gs.fit(X_train, y_bin[etichetta])
-    nome = f'SVC({etichetta})'
+    gs.fit(X_train, y_train)
+    nome = 'K-Nearest Neighbor'
     print(nome + '-'*max(0,(TRAT-len(nome))))
     print('iperparametri migliori: ', gs.best_params_)
     print('accuratezza del modello:', gs.best_score_)
     print('='*TRAT + '\n')   # separatore
 
+
+
+
+        # Decision tree - multiclass
+
+    iperparametri = {
+        'modello__max_depth': [3, 5, 7, 10, None],
+        'modello__min_samples_split': [2, 5, 10, 20],
+        'modello__min_samples_leaf': [1, 2, 4, 8],
+        'modello__max_features': [None, 'sqrt', 'log2'],
+        'modello__criterion': ['gini', 'entropy'],
+        'modello__class_weight': [None, 'balanced']
+    }
+
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('modello',  DecisionTreeClassifier())
+    ])
+
+    gs = GridSearchCV(
+        estimator=pipeline,
+        param_grid=iperparametri,
+        scoring='f1_macro',
+        cv=5,
+        verbose=True)
+
+
+    gs.fit(X_train, y_train)
+    nome = 'Decision Tree'
+    print(nome + '-'*max(0,(TRAT-len(nome))))
+    print('iperparametri migliori: ', gs.best_params_)
+    print('accuratezza del modello:', gs.best_score_)
+    print('='*TRAT + '\n')   # separatore
+
+
+
+
+        # LogisticRegression - classificatori binari
+    '''
+    Alcune combinazioni di parametri della LogReg che la funzione "GridSearchCV" testa non sono
+    valide per questo a run time alcuni fold non producono risultati validi !
+    '''
+
+    iperparametri = {
+        'modello__C': [0.001, 0.01, 0.1, 1, 10, 100],          # Regolarizzazione
+        'modello__penalty': ['l2'],                            # Tipo di regolarizzazione
+        'modello__solver': ['liblinear', 'saga'],              # Algoritmo di ottimizzazione
+        'modello__max_iter': [1000, 2000],                     # Iterazioni massime
+        'modello__tol': [1e-4, 1e-3],                          # Tolleranza per la convergenza
+        'modello__class_weight': [None, 'balanced']            # Gestione classi sbilanciate
+    }
+
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('modello',  LogisticRegression())
+    ])
+
+    gs = GridSearchCV(
+        estimator=pipeline,
+        param_grid=iperparametri,
+        scoring='f1_macro',
+        cv=5,
+        verbose=True)
+
+    '''
+    CLASSIFICATORI BINARI: LogReg e SVC devono essere ottimizzati per ognuna delle 3 classi; dopo la
+    definizione di GridSearchCV() deve essere chiamata con ogni etichetta.
+    Non posso usare la y_train che contiene più valori ma y_bin che contiene solo 1 o 0 a seconda 
+    dell'appartenenza del sample alla classe positiva
+    '''
+
+    for etichetta in LABLES :
+
+        gs.fit(X_train, y_bin[etichetta])
+        nome = f'LogisticRegression({etichetta})'
+        print(nome + '-'*max(0,(TRAT-len(nome))))
+        print('iperparametri migliori: ', gs.best_params_)
+        print('accuratezza del modello:', gs.best_score_)
+        print('='*TRAT + '\n')   # separatore  
+
+
+
+
+        # SVC - classificatori binari
+
+    iperparametri = {
+        'modello__C': [0.1, 1, 10, 100],                    # Regolarizzazione
+        'modello__kernel': ['rbf', 'linear'],               # Tipo di kernel
+        'modello__gamma': ['scale', 'auto', 0.01, 0.1, 1],  # Coefficiente per kernel rbf/poly
+    }
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('modello',  SVC())
+    ])
+
+    gs = GridSearchCV(
+        estimator=pipeline,
+        param_grid=iperparametri,
+        scoring='f1_macro',
+        cv=5,
+        verbose=True)
+
+
+    for etichetta in LABLES :
+
+        gs.fit(X_train, y_bin[etichetta])
+        nome = f'SVC({etichetta})'
+        print(nome + '-'*max(0,(TRAT-len(nome))))
+        print('iperparametri migliori: ', gs.best_params_)
+        print('accuratezza del modello:', gs.best_score_)
+        print('='*TRAT + '\n')   # separatore
+else:
+    print("non eseguo la fase di Cross Validation")
 ############################# Considerazioni - Model selection  #########################
 '''
 conclusione...
@@ -331,12 +332,17 @@ print(f"l'accurazetta del modello {best_model} è di: {accuratezza}")
 
 iperparametri = {'C': 0.001, 'class_weight': None, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear', 'tol': 0.0001}
 modello_setosa = LogisticRegression(**iperparametri)
+modello_setosa.fit(X_train_scal, y_setosa)
 
 iperparametri = {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}
 modello_versicolor = SVC(**iperparametri)
+modello_versicolor.fit(X_train_scal, y_versicolor)
 
 iperparametri = {'C': 1, 'gamma': 'scale', 'kernel': 'linear'}
 modello_virginica = SVC(**iperparametri)
+modello_virginica.fit(X_train_scal, y_virginica)
+
+modelli_binari = [modello_setosa, modello_versicolor, modello_virginica]
 
 def my_softmax(p0: float, p1: float, p2: float):
     """
@@ -352,6 +358,7 @@ def my_softmax(p0: float, p1: float, p2: float):
     -----
     softmax_probs : array
         array delle singole probabilità normalizzate
+        
     """
 
     P = np.array([p0, p1, p2])
@@ -361,22 +368,73 @@ def my_softmax(p0: float, p1: float, p2: float):
     
     return softmax_probs
 
-# FONTE https://scikit-learn.org/stable/glossary.html#term-decision_function
+def my_softmax_system(X: np.ndarray, modelli: list) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Questa funzione accetta un dataset e una lista di modelli di classificazione binaria.
+    Ogni campione viene elaborato da tutti i modelli e la softmax viene applicata
+    ai punteggi per ottenere le probabilità finali.
 
-punteggi = [
-    modello_setosa.decision_function(X_test_scal[0].reshape(1, -1))[0],
-    modello_versicolor.decision_function(X_test_scal[0].reshape(1, -1))[0],
-    modello_virginica.decision_function(X_test_scal[0].reshape(1, -1))[0]
-]
+    Args
+    -----
+    X : np.ndarray
+        dataset da risolvere (shape: n_samples, n_features)
 
-# Applico la softmax ai punteggi
-probabilita = my_softmax(punteggi[0], punteggi[1], punteggi[2])
+    modelli : list[object]
+        lista di modelli binari già addestrati (devono avere .decision_function())
 
-# Stampo l'array risultante
-print("Punteggi grezzi:", punteggi)
-print("Probabilità softmax:", probabilita)
-print("Somma delle probabilità:", sum(probabilita))  # Dovrebbe essere 1.0
-print("Classe predetta:", np.argmax(probabilita))   # 0=Setosa, 1=Versicolor, 2=Virginica
+    Return
+    -----
+    y_pred : np.ndarray
+        etichette predette per ogni sample (classe con probabilità massima)
+
+    prob : np.ndarray
+        matrice di probabilità (n_samples, n_modelli) dove ogni riga è la distribuzione softmax
+
+    Note
+    -----
+    La funzione non verifica che i modelli siano binari.
+    """
+    
+    punteggi_list = []
+    for modello in modelli:
+        try:
+
+            scores = modello.decision_function(X)
+            punteggi_list.append(scores)
+        except Exception as e:
+            print(f"!!! modello non valido: {e}")
+
+            punteggi_list.append(np.zeros(X.shape[0]))
+
+    punteggi_matrix = np.column_stack(punteggi_list)
+    
+    # implementazione della softmax
+    punteggi_stable = punteggi_matrix - np.max(punteggi_matrix, axis=1, keepdims=True)
+    exp = np.exp(punteggi_stable)
+    prob = exp / np.sum(exp, axis=1, keepdims=True)
+    y_pred = np.argmax(prob, axis=1)
+
+
+    return y_pred, prob
+
+
+y_pred, prob = my_softmax_system(X= X_train_scal, modelli = modelli_binari)
+
+for i, ele in enumerate(y_pred):
+    if ele ==0 : y_pred[i] = 'Iris-setosa'
+    elif ele ==1 : y_pred[i] = 'Iris-versicolor'
+    elif ele ==2 : y_pred[i] = 'Iris-virginica'
+    else: y_pred[i] = 'error'
+
+for i, ele in enumerate(prob):
+    print(f"sample{i} -> {y_pred[i]}")
+    for i, prob_classe in enumerate(ele):
+        print(f"{i}:{prob_classe}")
+
+
+
+
+
 
 '''
 Testo i due classificatori binari per setosa e virginica per trovare la classe che è
