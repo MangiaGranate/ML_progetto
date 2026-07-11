@@ -114,7 +114,7 @@ for lable in LABLES:
 
 y_setosa = y_bin['Iris-setosa']
 y_versicolor = y_bin['Iris-versicolor']
-y_virginia = y_bin['Iris-virginica']
+y_virginica = y_bin['Iris-virginica']
 
 
 '''
@@ -185,13 +185,18 @@ print('='*TRAT + '\n')   # separatore
     # Decision tree - multiclass
 
 iperparametri = {
-    
-    }
+    'modello__max_depth': [3, 5, 7, 10, None],
+    'modello__min_samples_split': [2, 5, 10, 20],
+    'modello__min_samples_leaf': [1, 2, 4, 8],
+    'modello__max_features': [None, 'sqrt', 'log2'],
+    'modello__criterion': ['gini', 'entropy'],
+    'modello__class_weight': [None, 'balanced']
+}
 
 
 pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('modello',  KNeighborsClassifier())
+    ('modello',  DecisionTreeClassifier())
 ])
 
 gs = GridSearchCV(
@@ -290,20 +295,12 @@ for etichetta in LABLES :
     print('='*TRAT + '\n')   # separatore
 
 ############################# Considerazioni - Model selection  #########################
-
 '''
-conclusioni...
+conclusione...
 '''
 
-parametri = {
-    'n_neighbors' : 5,
-    #'criterion': 'entropy'
-}
-
-best_model=KNeighborsClassifier(n_neighbors=5)
-best_model=DecisionTreeClassifier(criterion='entropy')
-
-
+best_model_hpar = {'class_weight': None, 'criterion': 'gini', 'max_depth': None, 'max_features': 'sqrt', 'min_samples_leaf': 2, 'min_samples_split': 5}
+best_model=DecisionTreeClassifier(**best_model_hpar)
 
 
 ############################# Testing  #########################
@@ -315,12 +312,14 @@ INIZIO FASE DI TESTING
 '''
 print(string)
 
-
+# scalamento dati di testing e training
 scaler = StandardScaler()
 scaler.fit(X_train)
 X_train_scal = scaler.transform(X_train)
 X_test_scal = scaler.transform(X_test)
 
+
+# Modello multiclasse migliore
 best_model.fit(X_train_scal, y_train)
 y_pred = best_model.predict(X_test_scal)
 
@@ -328,8 +327,59 @@ accuratezza = accuracy_score(y_test, y_pred)
 print(f"l'accurazetta del modello {best_model} è di: {accuratezza}")
 
 
+# Sistema 1-vs-all Softmax
+
+iperparametri = {'C': 0.001, 'class_weight': None, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear', 'tol': 0.0001}
+modello_setosa = LogisticRegression(**iperparametri)
+
+iperparametri = {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}
+modello_versicolor = SVC(**iperparametri)
+
+iperparametri = {'C': 1, 'gamma': 'scale', 'kernel': 'linear'}
+modello_virginica = SVC(**iperparametri)
+
+def my_softmax(p0: float, p1: float, p2: float):
+    """
+    Applica la funzione softmax a 3 probabilità (o punteggi) grezze.
+    Restituisce un array di 3 probabilità che sommano a 1.
+    
+    Args
+    -----
+    p0, p1, p2 : float
+        punteggi/probabilità grezze dei 3 modelli binari.
+    
+    Return
+    -----
+    softmax_probs : array
+        array delle singole probabilità normalizzate
+    """
+
+    P = np.array([p0, p1, p2])
+    P = P - np.max(P)
+    exp = np.exp(P)
+    softmax_probs = exp / np.sum(exp)
+    
+    return softmax_probs
+
+# FONTE https://scikit-learn.org/stable/glossary.html#term-decision_function
+
+punteggi = [
+    modello_setosa.decision_function(X_test_scal[0].reshape(1, -1))[0],
+    modello_versicolor.decision_function(X_test_scal[0].reshape(1, -1))[0],
+    modello_virginica.decision_function(X_test_scal[0].reshape(1, -1))[0]
+]
+
+# Applico la softmax ai punteggi
+probabilita = my_softmax(punteggi[0], punteggi[1], punteggi[2])
+
+# Stampo l'array risultante
+print("Punteggi grezzi:", punteggi)
+print("Probabilità softmax:", probabilita)
+print("Somma delle probabilità:", sum(probabilita))  # Dovrebbe essere 1.0
+print("Classe predetta:", np.argmax(probabilita))   # 0=Setosa, 1=Versicolor, 2=Virginica
+
 '''
-Testo i due classificatori binari per setosa e virginia per trovare la classe che è
+Testo i due classificatori binari per setosa e virginica per trovare la classe che è
 linearmente separabile
 
 
@@ -359,26 +409,26 @@ print(f"l'accurazetta del modello {modello_setosa} è di: {accuratezza}")
 
 
 
-# TESTING DI LOGREG(Iris-virginia)
+# TESTING DI LOGREG(Iris-virginica)
 
 print('='*TRAT + '\n')   # separatore
 
-iperparametri_LogReg_virginia = {'C': 10, 'class_weight': None, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga', 'tol': 0.0001}
-modello_virginia = LogisticRegression(**iperparametri_LogReg_virginia)
+iperparametri_LogReg_virginica = {'C': 10, 'class_weight': None, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga', 'tol': 0.0001}
+modello_virginica = LogisticRegression(**iperparametri_LogReg_virginica)
 
-modello_virginia.fit(X_train_scal, y_virginia)
-y_pred = modello_virginia.predict(X_test_scal)
+modello_virginica.fit(X_train_scal, y_virginica)
+y_pred = modello_virginica.predict(X_test_scal)
 
-# trasformo y_test in 0 o 1 a seconda dell'appartenenza a Iris-virginia
-y_test_virginia = []
+# trasformo y_test in 0 o 1 a seconda dell'appartenenza a Iris-virginica
+y_test_virginica = []
 for i, ele in enumerate(y_test):
-    if ele=='Iris-virginia':
-        y_test_virginia.append(1)
+    if ele=='Iris-virginica':
+        y_test_virginica.append(1)
     else:
-        y_test_virginia.append(0)
+        y_test_virginica.append(0)
 
-accuratezza = accuracy_score(y_test_virginia, y_pred)
-print(f"l'accurazetta del modello {modello_virginia} è di: {accuratezza}")
+accuratezza = accuracy_score(y_test_virginica, y_pred)
+print(f"l'accurazetta del modello {modello_virginica} è di: {accuratezza}")
 
 
 '''

@@ -1,0 +1,31 @@
+# Modello 1-vs-all Softmax
+import numpy as np
+
+def my_softmax(p0: float, p1: float, p2: float):
+    """
+    Applica la funzione softmax a 3 probabilità (o punteggi) grezze.
+    Restituisce un array di 3 probabilità che sommano a 1.
+    
+    Args
+    -----
+    p0, p1, p2 : float
+        punteggi/probabilità grezze dei 3 modelli binari.
+    
+    Return
+    -----
+    softmax_probs : array
+        array delle singole probabilità normalizzate
+    """
+
+    P = np.array([p0, p1, p2])
+    P = P - np.max(P)
+    exp = np.exp(P)
+    softmax_probs = exp / np.sum(exp)
+    
+    return softmax_probs
+
+
+p1, p2, p3 = 0.80, 0.40, 0.98
+P = my_softmax(p1,p2,p3)
+print(P)
+print(P.sum())
