@@ -1,0 +1,85 @@
+
+#############################
+EDA
+#############################
+
+Controllo valori nulli:
+valori nulli:
+x1    False
+x2    False
+x3    False
+x4    False
+y     False
+dtype: bool
+========================================================================================================================
+Controllo conteggio classi:
+y
+Iris-setosa        50
+Iris-versicolor    50
+Iris-virginica     50
+Name: count, dtype: int64
+========================================================================================================================
+distribuzione delle classi in y_train:
+{'Iris-versicolor': 35, 'Iris-setosa': 35, 'Iris-virginica': 35}
+========================================================================================================================
+distribuzione delle classi in y_test:
+{'Iris-versicolor': 15, 'Iris-virginica': 15, 'Iris-setosa': 15}
+
+#############################
+INIZIO CROSS VALIDATION
+#############################
+
+Fitting 5 folds for each of 10 candidates, totalling 50 fits
+K-Nearest Neighbor------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__n_neighbors': 5}
+accuratezza del modello: 0.9617094017094019
+========================================================================================================================
+
+Fitting 5 folds for each of 1 candidates, totalling 5 fits
+Decision Tree-----------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {}
+accuratezza del modello: 0.9617094017094019
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-setosa)-----------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 0.001, 'modello__class_weight': None, 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'liblinear', 'modello__tol': 0.0001}
+accuratezza del modello: 1.0
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-versicolor)-------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__class_weight': 'balanced', 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'liblinear', 'modello__tol': 0.0001}
+accuratezza del modello: 0.7265534487299193
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-virginica)--------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__class_weight': None, 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'saga', 'modello__tol': 0.0001}
+accuratezza del modello: 0.9681186757048825
+========================================================================================================================
+
+Fitting 5 folds for each of 360 candidates, totalling 1800 fits
+SVC(Iris-setosa)--------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 0.1, 'modello__class_weight': None, 'modello__decision_function_shape': 'ovr', 'modello__degree': 2, 'modello__gamma': 'scale', 'modello__kernel': 'linear', 'modello__probability': True}
+accuratezza del modello: 1.0
+========================================================================================================================
+
+Fitting 5 folds for each of 360 candidates, totalling 1800 fits
+SVC(Iris-versicolor)----------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__class_weight': None, 'modello__decision_function_shape': 'ovr', 'modello__degree': 2, 'modello__gamma': 'scale', 'modello__kernel': 'rbf', 'modello__probability': True}
+accuratezza del modello: 0.9896296296296295
+========================================================================================================================
+
+Fitting 5 folds for each of 360 candidates, totalling 1800 fits
+SVC(Iris-virginica)-----------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 1, 'modello__class_weight': None, 'modello__decision_function_shape': 'ovr', 'modello__degree': 2, 'modello__gamma': 'scale', 'modello__kernel': 'linear', 'modello__probability': True}
+accuratezza del modello: 0.978489046075253
+========================================================================================================================
+
+
+#############################
+INIZIO FASE DI TESTING
+#############################
+
+l'accurazetta del modello DecisionTreeClassifier(criterion='entropy') è di: 0.9333333333333333
