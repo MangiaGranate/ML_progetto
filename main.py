@@ -418,22 +418,25 @@ def my_softmax_system(X: np.ndarray, modelli: list) -> tuple[np.ndarray, np.ndar
     return y_pred, prob
 
 
-y_pred, prob = my_softmax_system(X= X_train_scal, modelli = modelli_binari)
+y_pred, prob = my_softmax_system(X= X_test_scal, modelli = modelli_binari)
+y_pred_rinominato = []
 
-for i, ele in enumerate(y_pred):
-    if ele ==0 : y_pred[i] = 'Iris-setosa'
-    elif ele ==1 : y_pred[i] = 'Iris-versicolor'
-    elif ele ==2 : y_pred[i] = 'Iris-virginica'
-    else: y_pred[i] = 'error'
+for ele in y_pred:
+    if ele==0 : nome = 'Iris-setosa'
+    elif ele==1 : nome = 'Iris-versicolor'
+    elif ele==2 : nome = 'Iris-virginica'
+    else : nome = 'error'
+    y_pred_rinominato.append(nome)
 
-for i, ele in enumerate(prob):
-    print(f"sample{i} -> {y_pred[i]}")
-    for i, prob_classe in enumerate(ele):
-        print(f"{i}:{prob_classe}")
+if False:       # stampa per ogni sample la probabilità predetta da ogni modello binario
+    for i, ele in enumerate(prob):
+        print(f"sample{i} -> {y_pred_rinominato[i]}")
+        for i, prob_classe in enumerate(ele):
+            print(f"{i}:{prob_classe}")
 
 
-
-
+accuratezza = accuracy_score(y_test, y_pred_rinominato)
+print(f"l'accurazetta del sistema Softmax è di: {accuratezza}")
 
 
 '''
