@@ -267,7 +267,7 @@ if False:
         # SVC - classificatori binari
 
     iperparametri = {
-        'modello__C': [0.1, 1, 10, 100],                    # Regolarizzazione
+        'modello__C': [0.001, 0.01, 0.1, 1, 10, 100],       # Regolarizzazione
         'modello__kernel': ['rbf', 'linear'],               # Tipo di kernel
         'modello__gamma': ['scale', 'auto', 0.01, 0.1, 1],  # Coefficiente per kernel rbf/poly
     }
@@ -344,6 +344,7 @@ modello_virginica.fit(X_train_scal, y_virginica)
 
 modelli_binari = [modello_setosa, modello_versicolor, modello_virginica]
 
+# old 
 def my_softmax(p0: float, p1: float, p2: float):
     """
     Applica la funzione softmax a 3 probabilità (o punteggi) grezze.
