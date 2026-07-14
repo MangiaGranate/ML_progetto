@@ -1,13 +1,3 @@
-'''
-Introduzione:
-
-Dai dati presenti nella zip del dataset ho scoperto che solo una delle 3 classi è linearmente divisibile, devo 
-utilizzare principalmente metodi non lineari.
-Inizialmente testerò il decision tree e il nearest neighbors come unici classificatori delle tre classi.
-In seguito proverei altri modelli singoli per ogni classe (classificazione binaria) e li interpreterei
-con un modello 1-vs-all
-
-'''
 LABLES = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
 TRAT = 120      # quanti trattini mettere come separatore ad ogni sezione
 
@@ -75,7 +65,7 @@ X = dataset.drop(columns='y').to_numpy()
 '''
 FONTE: scikit-learn.org
 Come prima cosa dividiamo i sample del dataset in training e testing; alla funzione poniamo:
-test_size=0.1 perchè essendo il dataset molto piccolo vogliamo allenare i nostri campioni con più sample possibili
+test_size=0.30 perchè essendo il dataset molto piccolo vogliamo allenare i nostri campioni con più sample possibili
 random_size=int in modo che ad ogni iterazione la funzione produca sempre lo stesso split
 stratify=y in modo che i due sottoinsiemi siano omogenei rispetto ad y
 '''
@@ -147,7 +137,7 @@ INIZIO CROSS VALIDATION
 '''
 print(string)
 
-if False:
+if True:
         # Nearest neighbors - multiclass
 
     iperparametri = {
@@ -159,7 +149,7 @@ if False:
     ''' NB
     Dal momento che viene usata una Pipeline gli iperparametri devono essere riferiti ad un preciso step
     di essa, per questo devo mettere modello__ prima di n_neighbors per indiare a pipeline che l'iperparametro
-    è riferito al modello e nonn allo scaler
+    è riferito al modello e non allo scaler
     '''
 
 
@@ -223,7 +213,7 @@ if False:
         # LogisticRegression - classificatori binari
     '''
     Alcune combinazioni di parametri della LogReg che la funzione "GridSearchCV" testa non sono
-    valide per questo a run time alcuni fold non producono risultati validi !
+    valide per questo a run time alcuni fold non producono risultati validi e vengono scartati !
     '''
 
     iperparametri = {
@@ -300,13 +290,23 @@ else:
     print("non eseguo la fase di Cross Validation")
 ############################# Considerazioni - Model selection  #########################
 '''
-conclusione...
+Il modello multiclasse migliore è il k-nearest neighbors.
+
+Per il 1-vs-all invece:
+
+Setosa          LogReg                      
+Versicolor      SVC(kernel gaussiano)
+Virginica       SVC(kernel lineare)
 '''
 
 best_model_hpar = {'algorithm': 'auto', 'leaf_size': 20, 'metric': 'manhattan', 'n_neighbors': 11}
 best_model=KNeighborsClassifier(**best_model_hpar)
 
 ############################# Testing  #########################
+'''
+Conclusione - il sistema 1-vs-all è più performante del miglior modello a classificazione multiclasse
+'''
+
 
 string = '''
 #############################
@@ -407,6 +407,7 @@ def my_softmax_system(X: np.ndarray, modelli: list) -> tuple[np.ndarray, np.ndar
 y_pred, prob = my_softmax_system(X= X_test_scal, modelli = modelli_binari)
 y_pred_rinominato = []
 
+# rinomina la lable sostituento a 0,1 e 2 il nome in chiaro della classe
 for ele in y_pred:
     if ele==0 : nome = 'Iris-setosa'
     elif ele==1 : nome = 'Iris-versicolor'
