@@ -151,8 +151,11 @@ if False:
         # Nearest neighbors - multiclass
 
     iperparametri = {
-        'modello__n_neighbors': [1,2,3,4,5,6,7,8,9,10]
-        }
+        'modello__n_neighbors': [3, 5, 7, 9, 11, 15],
+        'modello__metric': ['euclidean', 'manhattan', 'minkowski'],
+        'modello__algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+        'modello__leaf_size': [20, 25, 30, 35, 40, 45, 50],
+    }
     ''' NB
     Dal momento che viene usata una Pipeline gli iperparametri devono essere riferiti ad un preciso step
     di essa, per questo devo mettere modello__ prima di n_neighbors per indiare a pipeline che l'iperparametro
@@ -196,7 +199,7 @@ if False:
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('modello',  DecisionTreeClassifier())
+        ('modello',  DecisionTreeClassifier(random_state=7))
     ])
 
     gs = GridSearchCV(
@@ -235,7 +238,7 @@ if False:
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('modello',  LogisticRegression())
+        ('modello',  LogisticRegression(random_state=7))
     ])
 
     gs = GridSearchCV(
@@ -274,7 +277,7 @@ if False:
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('modello',  SVC())
+        ('modello',  SVC(random_state=7))
     ])
 
     gs = GridSearchCV(
@@ -300,9 +303,8 @@ else:
 conclusione...
 '''
 
-best_model_hpar = {'class_weight': None, 'criterion': 'gini', 'max_depth': None, 'max_features': 'sqrt', 'min_samples_leaf': 2, 'min_samples_split': 5}
-best_model=DecisionTreeClassifier(**best_model_hpar)
-
+best_model_hpar = {'algorithm': 'auto', 'leaf_size': 20, 'metric': 'manhattan', 'n_neighbors': 11}
+best_model=KNeighborsClassifier(**best_model_hpar)
 
 ############################# Testing  #########################
 
@@ -325,49 +327,32 @@ best_model.fit(X_train_scal, y_train)
 y_pred = best_model.predict(X_test_scal)
 
 accuratezza = accuracy_score(y_test, y_pred)
-print(f"l'accurazetta del modello {best_model} è di: {accuratezza}")
+precisione = precision_score(y_test, y_pred, average=None)
+recall = recall_score(y_test, y_pred, average=None)
+f1 = f1_score(y_test, y_pred, average=None)
+
+print(f"l'accurazetta del modello multiclasse migliore è di: {accuratezza}")
+print(f"la precisione del modello multiclasse migliore è di: {precisione}")
+print(f"recall del modello multiclasse migliore è di: {recall}")
+print(f"f1 del modello multiclasse migliore è di: {f1}")
 
 
 # Sistema 1-vs-all Softmax
 
 iperparametri = {'C': 0.001, 'class_weight': None, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear', 'tol': 0.0001}
-modello_setosa = LogisticRegression(**iperparametri)
+modello_setosa = LogisticRegression(**iperparametri, random_state=7)
 modello_setosa.fit(X_train_scal, y_setosa)
 
 iperparametri = {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}
-modello_versicolor = SVC(**iperparametri)
+modello_versicolor = SVC(**iperparametri, random_state=7)
 modello_versicolor.fit(X_train_scal, y_versicolor)
 
 iperparametri = {'C': 1, 'gamma': 'scale', 'kernel': 'linear'}
-modello_virginica = SVC(**iperparametri)
+modello_virginica = SVC(**iperparametri, random_state=7)
 modello_virginica.fit(X_train_scal, y_virginica)
 
 modelli_binari = [modello_setosa, modello_versicolor, modello_virginica]
 
-# old 
-def my_softmax(p0: float, p1: float, p2: float):
-    """
-    Applica la funzione softmax a 3 probabilità (o punteggi) grezze.
-    Restituisce un array di 3 probabilità che sommano a 1.
-    
-    Args
-    -----
-    p0, p1, p2 : float
-        punteggi/probabilità grezze dei 3 modelli binari.
-    
-    Return
-    -----
-    softmax_probs : array
-        array delle singole probabilità normalizzate
-        
-    """
-
-    P = np.array([p0, p1, p2])
-    P = P - np.max(P)
-    exp = np.exp(P)
-    softmax_probs = exp / np.sum(exp)
-    
-    return softmax_probs
 
 def my_softmax_system(X: np.ndarray, modelli: list) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -431,13 +416,21 @@ for ele in y_pred:
 
 if False:       # stampa per ogni sample la probabilità predetta da ogni modello binario
     for i, ele in enumerate(prob):
-        print(f"sample{i} -> {y_pred_rinominato[i]}")
+        print(f"sample{i} -> {y_pred_rinominato[i]} (valore reale: {y_test[i]})")
         for i, prob_classe in enumerate(ele):
             print(f"{i}:{prob_classe}")
 
 
 accuratezza = accuracy_score(y_test, y_pred_rinominato)
+precisione = precision_score(y_test, y_pred_rinominato, average=None)
+recall = recall_score(y_test, y_pred_rinominato, average=None)
+f1 = f1_score(y_test, y_pred_rinominato, average=None)
+
 print(f"l'accurazetta del sistema Softmax è di: {accuratezza}")
+print(f"la precisione del sistema Softmax è di: {precisione}")
+print(f"recall del sistema Softmax è di: {recall}")
+print(f"f1 del sistema Softmax è di: {f1}")
+
 
 
 '''

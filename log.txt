@@ -32,12 +32,64 @@ distribuzione delle classi in y_test:
 INIZIO CROSS VALIDATION
 #############################
 
-non eseguo la fase di Cross Validation
+Fitting 5 folds for each of 504 candidates, totalling 2520 fits
+K-Nearest Neighbor------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__algorithm': 'auto', 'modello__leaf_size': 20, 'modello__metric': 'manhattan', 'modello__n_neighbors': 11}
+accuratezza del modello: 0.970982905982906
+========================================================================================================================
+
+Fitting 5 folds for each of 960 candidates, totalling 4800 fits
+Decision Tree-----------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__class_weight': None, 'modello__criterion': 'gini', 'modello__max_depth': 5, 'modello__max_features': None, 'modello__min_samples_leaf': 1, 'modello__min_samples_split': 2}
+accuratezza del modello: 0.9518376068376069
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-setosa)-----------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 0.001, 'modello__class_weight': None, 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'liblinear', 'modello__tol': 0.0001}
+accuratezza del modello: 1.0
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-versicolor)-------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__class_weight': 'balanced', 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'liblinear', 'modello__tol': 0.0001}
+accuratezza del modello: 0.7265534487299193
+========================================================================================================================
+
+Fitting 5 folds for each of 96 candidates, totalling 480 fits
+LogisticRegression(Iris-virginica)--------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__class_weight': None, 'modello__max_iter': 1000, 'modello__penalty': 'l2', 'modello__solver': 'saga', 'modello__tol': 0.0001}
+accuratezza del modello: 0.9681186757048825
+========================================================================================================================
+
+Fitting 5 folds for each of 60 candidates, totalling 300 fits
+SVC(Iris-setosa)--------------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 0.01, 'modello__gamma': 'scale', 'modello__kernel': 'linear'}
+accuratezza del modello: 1.0
+========================================================================================================================
+
+Fitting 5 folds for each of 60 candidates, totalling 300 fits
+SVC(Iris-versicolor)----------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 10, 'modello__gamma': 'scale', 'modello__kernel': 'rbf'}
+accuratezza del modello: 0.9896296296296295
+========================================================================================================================
+
+Fitting 5 folds for each of 60 candidates, totalling 300 fits
+SVC(Iris-virginica)-----------------------------------------------------------------------------------------------------
+iperparametri migliori:  {'modello__C': 1, 'modello__gamma': 'scale', 'modello__kernel': 'linear'}
+accuratezza del modello: 0.978489046075253
+========================================================================================================================
+
 
 #############################
 INIZIO FASE DI TESTING
 #############################
 
-l'accurazetta del modello DecisionTreeClassifier(max_features='sqrt', min_samples_leaf=2,
-                       min_samples_split=5) è di: 0.8888888888888888
+l'accurazetta del modello multiclasse migliore è di: 0.9111111111111111
+la precisione del modello multiclasse migliore è di: [1.         0.86666667 0.86666667]
+recall del modello multiclasse migliore è di: [1.         0.86666667 0.86666667]
+f1 del modello multiclasse migliore è di: [1.         0.86666667 0.86666667]
 l'accurazetta del sistema Softmax è di: 0.9777777777777777
+la precisione del sistema Softmax è di: [1.     1.     0.9375]
+recall del sistema Softmax è di: [1.         0.93333333 1.        ]
+f1 del sistema Softmax è di: [1.         0.96551724 0.96774194]
